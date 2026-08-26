@@ -1,0 +1,6 @@
+/* PWA registration — offline-capable installable shell. */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => { /* noop: non-HTTPS */ });
+  });
+}

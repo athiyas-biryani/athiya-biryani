@@ -1,0 +1,18 @@
+{
+  "name": "Athiya's Hyderabad Biryani",
+  "short_name": "Athiya's Biryani",
+  "description": "Order dum biryani, curries and starters online from Athiya's Hyderabad Biryani. Direct delivery in our local zone — pay on delivery.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#15130e",
+  "theme_color": "#15130e",
+  "icons": [
+    {
+      "src": "assets/logo/logo.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

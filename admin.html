@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Admin — Athiya's Hyderabad Biryani</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#15130e">
+  <link rel="icon" href="assets/logo/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&family=Rozha+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/signboard.css">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+<!-- impeccable:direction
+THESIS: The dashboard is the counter behind the facade — a board of stamped order chits the kitchen works through at a glance, with a bell that rings the instant a new chit lands; it refuses the grid-of-cards dashboards that make a busy kitchen scroll for the next action.
+OWN-WORLD: The same pista-green and black signboards, gold lettering and aged paper; order states travel as dashed rubber stamps (PENDING in chilli, COOKING in amber, PAID in cardamom); the KPI strip reads like a counter ledger with trend beside every value.
+STORY: Staff keep the phone on the counter; a new order rings the bell and drops a chit with a thump, they stamp it COOKING, print the KOT, clip it DISPATCHED on delivery, and stamp PAID when cash or UPI clears — revenue tallies itself.
+FIRST VIEWPORT: A locked gate until the PIN, then the tally ledger across the top (orders, accepted revenue, in-kitchen queue — each with trend), the chit board below with the freshest PENDING chit flagged and sounding, and the board wall of stock toggles behind a shelf tab.
+FORM: Old City Signboards; the user's chosen pick card of the direction roll (seed ef717721); states travel as stamps, not colors alone.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+
+  <div class="login-gate" id="login-gate">
+    <form class="login-card" id="login-form" novalidate>
+      <div class="nameplate">
+        <h1 class="name" style="font-size:18px;">The Counter</h1>
+        <div class="sub">Owner access only</div>
+        <div class="paint-rule" aria-hidden="true"></div>
+      </div>
+      <div class="lock-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="10" width="16" height="11" rx="2"/>
+          <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+        </svg>
+      </div>
+      <label for="login-pin">Enter the counter PIN</label>
+      <input id="login-pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" required>
+        <p class="login-err" aria-live="polite">Wrong PIN — try again.</p>
+      <button class="btn btn-primary" type="submit" style="width:100%;margin-top:14px;">Open the counter</button>
+    </form>
+  </div>
+
+  <header class="admin-head">
+    <div class="container">
+      <span class="live-dot" id="live-dot" aria-hidden="true"></span>
+      <h1 class="mini-name">Athiya's · The Counter</h1>
+      <button class="logout-btn" id="logout-btn" type="button">Lock</button>
+    </div>
+  </header>
+
+  <main class="container admin-main">
+    <div class="kpi-grid" id="kpi-grid" aria-label="Today's tally" aria-live="polite"></div>
+
+    <nav class="admin-tabs" id="admin-tabs" aria-label="Sections">
+      <button class="shelf-tab" data-tab="queue" aria-selected="true">Orders</button>
+      <button class="shelf-tab" data-tab="stock">Stock</button>
+      <button class="shelf-tab" data-tab="earnings">Earnings</button>
+    </nav>
+
+    <section class="queue" id="queue" aria-label="Order chits">
+      <h2 class="visually-hidden">Orders</h2>
+      <div class="shelf" id="queue-filters" aria-label="Filter orders">
+        <button class="shelf-tab" data-f="active" aria-selected="true">Active</button>
+        <button class="shelf-tab" data-f="paid">Paid</button>
+        <button class="shelf-tab" data-f="all">All</button>
+      </div>
+      <div id="chit-board" aria-live="polite"></div>
+    </section>
+
+    <section class="stock-list" id="stock" hidden aria-label="Stock control">
+      <h2 class="visually-hidden">Stock</h2></section>
+
+    <section class="earn-panel" id="earnings" hidden aria-label="Earnings">
+      <h2 class="visually-hidden">Earnings</h2>
+      <div class="earn-tabs" id="earn-tabs">
+        <button class="shelf-tab" data-e="today" aria-selected="true">Today</button>
+        <button class="shelf-tab" data-e="week">This week</button>
+        <button class="shelf-tab" data-e="month">This month</button>
+      </div>
+      <div class="earn-summary" id="earn-summary"></div>
+      <div class="earn-list" id="earn-list"></div>
+    </section>
+  </main>
+
+  <div class="kot-print" id="kot-print"></div>
+
+  <!-- Full-order decision pop-up: takes over until accepted or rejected. -->
+  <section class="decide" id="decide" hidden role="dialog" aria-modal="true" aria-label="Order needs your decision">
+    <article class="chit is-ringing" id="decide-chit"></article>
+  </section>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/menu-data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>

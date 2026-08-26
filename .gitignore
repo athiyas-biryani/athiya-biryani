@@ -1,0 +1,14 @@
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local tool state and generated caches - never commit these
+.impeccable/
+graphify-out/

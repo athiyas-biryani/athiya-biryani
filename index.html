@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Athiya's Hyderabad Biryani — Order Online</title>
+  <meta name="description" content="Order dum biryani, curries and starters online from Athiya's Hyderabad Biryani. Direct delivery within our local zone — pay on delivery.">
+  <meta name="theme-color" content="#15130e">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/logo/logo.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;700;800&family=Rozha+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/signboard.css">
+  <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+<!-- impeccable:direction
+THESIS: The customer site is the street facade of a Hyderabad bazaar — a wall of hand-painted boards (the menu) where a guest orders fast and pays on delivery; it refuses the dark-charcoal food-photo template of delivery apps.
+OWN-WORLD: Pista-green and near-black signboards with gold-leaf lettering over aged counter paper, brick-red for action and the new-order alert; hand-painted shapes and stamped chits carry every state; Rozha One display over Mukta body.
+STORY: A hungry local within pincode 522034 opens a WhatsApp link, reads the board wall in seconds, fills a pan from the cart, weighs the total, and is handed a stamped chit with a token — the counter will call if there is an issue.
+FIRST VIEWPORT: Painted nameplate and logo across the top, an open/closed status strip, then the shelf of categories and the wall of green boards — each dish a board with a painted name and a swing-tag price — with the sticky cart bar waiting at the bottom.
+FORM: Old City Signboards; the user's chosen pick card of the direction roll (seed ef717721); states travel as stamps, not colors alone.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+-->
+
+  <header class="site-head">
+    <div class="container">
+      <div class="brand-row">
+        <img class="brand-logo" src="assets/logo/logo.jpg" alt="Athiya's Hyderabad Biryani" id="logo-img">
+        <div class="nameplate">
+          <h1 class="name" id="restaurant-name"></h1>
+          <div class="sub" id="restaurant-tagline"></div>
+          <div class="paint-rule" aria-hidden="true"></div>
+        </div>
+      </div>
+      <div class="status-strip" id="status-strip">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="status-text">Checking kitchen…</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+      <nav class="shelf" id="category-shelf" aria-label="Menu categories" role="tablist"></nav>
+      <section id="menu-wall" class="menu-wall" aria-label="Menu"></section>
+    </div>
+
+    <section class="about" aria-labelledby="about-title">
+      <div class="container">
+        <h2 class="section-title" id="about-title">About the shop</h2>
+        <p id="about-copy">Dum-se-cooked Hyderabad biryani from our kitchen, delivered hot to your door. Order straight from us — no platform, no mark-up.</p>
+        <div class="photo-grid" id="photo-grid"></div>
+        <div class="contact-cards" id="contact-cards"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="container">
+      <strong id="foot-name"></strong> · Dum biryani, cooked to order
+      <div class="small" id="foot-hours"></div>
+    </div>
+  </footer>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <aside class="cart-bar" id="cart-bar" aria-live="polite">
+    <span class="cart-count" id="cart-count">0</span>
+    <span class="cart-label" id="cart-label">Your pan is empty</span>
+    <button class="btn btn-gold btn-sm" id="open-cart" type="button">View order</button>
+    <span class="cart-total" id="cart-total">₹0</span>
+  </aside>
+
+  <section class="sheet" id="cart-sheet" role="dialog" aria-modal="true" aria-labelledby="cart-sheet-title">
+    <div class="sheet-head">
+      <h2 id="cart-sheet-title">Your order</h2>
+      <button class="sheet-close" id="close-cart" type="button" aria-label="Close cart">✕</button>
+    </div>
+    <div class="cart-lines" id="cart-lines"></div>
+    <div class="cart-foot">
+      <div class="net-row"><span>Total</span><span id="cart-net">₹0</span></div>
+      <button class="btn btn-primary" id="checkout-btn" type="button">Pay on Delivery — Checkout</button>
+      <p class="pod-note" id="pod-note">No advance payment — pay cash when your order arrives.</p>
+    </div>
+  </section>
+
+  <section class="sheet" id="checkout-sheet" role="dialog" aria-modal="true" aria-labelledby="checkout-sheet-title">
+    <div class="sheet-head">
+      <h2 id="checkout-sheet-title">Place order</h2>
+      <button class="sheet-close" id="close-checkout" type="button" aria-label="Close checkout">✕</button>
+    </div>
+    <form id="checkout-form" class="checkout-body" novalidate>
+      <div class="field" data-f="name">
+        <label for="f-name">Name</label>
+        <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Your name" required maxlength="80">
+        <span class="err-msg">Please tell us your name.</span>
+      </div>
+      <div class="field" data-f="phone">
+        <label for="f-phone">Phone</label>
+        <input id="f-phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="10-digit mobile number" required maxlength="10">
+        <span class="err-msg">Please enter a valid 10-digit mobile number.</span>
+      </div>
+      <div class="field" data-f="pincode">
+        <label for="f-pincode">Pincode</label>
+        <input id="f-pincode" name="pincode" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 522034" required maxlength="6">
+        <span class="err-msg">Sorry, we currently deliver directly only within our local zone.</span>
+        <p class="pincode-notice">We deliver only to PIN code <strong>522034</strong> (Lam, Amaravati area).</p>
+      </div>
+      <div class="field" data-f="address">
+        <label for="f-address">Delivery address</label>
+        <textarea id="f-address" name="address" rows="3" autocomplete="street-address" placeholder="House / street / landmark" required maxlength="300"></textarea>
+        <span class="err-msg">Please give a delivery address.</span>
+      </div>
+
+      <div class="cart-foot" style="border-top:none;padding:var(--space-3) 0 0;">
+        <div class="net-row"><span>To pay on delivery</span><span id="checkout-net">₹0</span></div>
+        <button class="btn btn-primary" type="submit" id="place-order-btn">Place order</button>
+      </div>
+    </form>
+  </section>
+
+  <div class="confirm" id="confirm" hidden>
+    <div class="chit" role="status">
+      <div class="stamp stamp--paid">Order received</div>
+      <div class="token-big" id="confirm-token">#001</div>
+      <p><strong>Thank you!</strong> Your order is in the kitchen.</p>
+      <p class="small muted">We'll call you if there's any issue.</p>
+      <button class="btn btn-gold" id="confirm-done" type="button">Done</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <script src="js/utils.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/menu-data.js"></script>
+  <script src="js/db.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/customer.js"></script>
+  <script src="js/pwa.js"></script>
+</body>
+</html>
