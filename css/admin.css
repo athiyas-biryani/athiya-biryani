@@ -138,8 +138,10 @@
 .chit.is-accepted { border-color: var(--amber); }
 .chit.is-dispatched { border-color: #7a5a20; }
 .chit.is-paid { border-color: var(--paid); }
-.chit.is-cancelled { opacity: 0.6; }
-.chit.is-cancelled .stamp--rejected { transform: rotate(-3deg); }
+.chit.is-rejected { opacity: 0.6; border-style: dashed; }
+.chit.is-cancelled { opacity: 0.55; border-style: dashed; }
+.chit.is-rejected .stamp--rejected,
+.chit.is-cancelled .stamp--cancelled { transform: rotate(-3deg); }
 
 /* ── Stock toggles + menu management ───────────────────────────────────── */
 .stock-list { display: grid; gap: 8px; padding-bottom: var(--space-6); }

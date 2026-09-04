@@ -22,13 +22,19 @@ create table if not exists public.orders (
   items         jsonb not null default '[]'::jsonb,
   net_amount    numeric not null default 0,
   status        text not null default 'pending'
-                check (status in ('pending','accepted','dispatched','paid','cancelled')),
+                check (status in ('pending','accepted','dispatched','paid','rejected','cancelled')),
   payment       text not null default 'pod',
   created_at    timestamptz not null default now()
 );
 
 create index if not exists orders_created_idx on public.orders (created_at desc);
 create index if not exists orders_status_idx on public.orders (status);
+
+-- One-time migration (v2 state model): the old build wrote admin rejections as
+-- 'cancelled'. Rejections now use 'rejected'; 'cancelled' is reserved for the
+-- customer's 1-minute self-cancellation. Repoint the old rows so semantics stay
+-- clean. Safe to re-run — idempotent.
+update public.orders set status = 'rejected' where status = 'cancelled';
 
 -- Single-row settings bag.
 create table if not exists public.settings (  

@@ -438,6 +438,7 @@ input, select, textarea {
 .stamp--dispatched { color: #7a5a20; border-color: #7a5a20; }
 .stamp--paid { color: var(--paid); border-color: var(--paid); }
 .stamp--rejected { color: var(--ink-faint); border-color: var(--ink-faint); }
+.stamp--cancelled { color: var(--ink-faint); border-color: var(--ink-faint); }
 
 .chit-actions {
   display: flex;

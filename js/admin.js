@@ -11,7 +11,10 @@
     accepted:   { label: "Accepted · Cooking in Kitchen", stamp: "stamp--cooking",   cls: "is-accepted",  next: "dispatched", nextLabel: "Mark Dispatched" },
     dispatched: { label: "Dispatched",   stamp: "stamp--dispatched", cls: "is-dispatched", next: "paid",       nextLabel: "Mark Paid" },
     paid:       { label: "Paid",         stamp: "stamp--paid",       cls: "is-paid",       next: null,        nextLabel: "" },
-    cancelled:  { label: "Rejected",     stamp: "stamp--rejected",   cls: "is-cancelled",  next: null,        nextLabel: "" }
+    /* Admin rejected the order (the kitchen will not cook it). */
+    rejected:   { label: "Rejected",     stamp: "stamp--rejected",   cls: "is-rejected",   next: null,        nextLabel: "" },
+    /* The customer cancelled within the 1-minute grace window. */
+    cancelled:  { label: "Cancelled",    stamp: "stamp--cancelled",  cls: "is-cancelled",  next: null,        nextLabel: "" }
   };
 
   let menu = [];
@@ -201,7 +204,7 @@
       <p class="decide-note">Order #${escapeHtml(current.token)} is waiting for you</p>`;
     wrap.hidden = false;
     $("#decide-accept").addEventListener("click", () => decide("accepted"));
-    $("#decide-reject").addEventListener("click", () => decide("cancelled"));
+    $("#decide-reject").addEventListener("click", () => decide("rejected"));
     if (wasHidden) $("#decide-accept").focus({ preventScroll: true });
   }
 
@@ -228,9 +231,10 @@
     });
   }
 
-  /* Takings = every order taken that isn't rejected — a live running total
-     through the newest order, not just the ones already marked paid. */
-  const countable = o => o.status !== "cancelled";
+  /* Takings = every order taken that isn't rejected or customer-cancelled —
+     a live running total through the newest order, not just the ones already
+     marked paid. */
+  const countable = o => o.status !== "cancelled" && o.status !== "rejected";
   const sumTakings = list => list.reduce((s, o) => s + (Number(o.net_amount) || 0), 0);
 
   /* ── KPIs (ledger with trend beside every value) ───────────────────────── */
@@ -306,7 +310,7 @@
     if (o.status === "pending") {
       actions += `<button class="btn btn-primary btn-sm" data-act="accept" data-id="${o.id}">${s.nextLabel}</button>
                   <button class="btn btn-ghost btn-sm" data-act="reject" data-id="${o.id}">Reject</button>`;
-    } else if (o.status === "cancelled") {
+    } else if (o.status === "rejected" || o.status === "cancelled") {
       actions += `<button class="btn btn-ghost btn-sm" data-act="undo" data-id="${o.id}">↩ Restore to pending</button>`;
     } else if (s.next) {
       actions += `<button class="btn btn-paid btn-sm" data-act="${s.next}" data-id="${o.id}">${s.nextLabel}</button>`;
@@ -352,7 +356,7 @@
       return;
     }
 
-    const statusMap = { accept: "accepted", reject: "cancelled", dispatched: "dispatched", paid: "paid", undo: "pending" };
+    const statusMap = { accept: "accepted", reject: "rejected", dispatched: "dispatched", paid: "paid", undo: "pending" };
     const status = statusMap[act];
     if (!status) return;
     await setStatus(id, status, `#${order.token} → ${STATUSES[status].label}`);
