@@ -11,7 +11,6 @@ window.ATHIYA = {
     tagline: "Hyderabad's Own Dum Biryani",
     phone: "86866 07020",                 // display phone
     phone2: "99496 24874",                // secondary display phone
-    whatsapp: "9949624874",              // digits only — WhatsApp share
     address: "Amaravati Main Road, Lam, Andhra Pradesh 522034",
     hours: "12:00 Noon – 11:30 PM",
     logo: "assets/logo/logo.jpg",

@@ -409,7 +409,9 @@
       `Address: ${order.address} (${order.pincode})`,
       `Collect cash or UPI QR at the door.`
     ].join("\n");
-    const url = `https://wa.me/${CFG.restaurant.whatsapp || ""}?text=${encodeURIComponent(text)}`;
+    /* No phone number on the deep link — WhatsApp opens its own recipient
+       picker so staff can share the bill with whoever is taking the delivery. */
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   }
 
