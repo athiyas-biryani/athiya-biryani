@@ -178,6 +178,28 @@
     return String(max + 1).padStart(3, "0");
   }
 
+  /* Customer-scoped lookup: returns only the orders the guest placed, matched
+     by their public ids (this app has no customer accounts, so the browser
+     keeps the ids of the orders it placed and re-hydrates them from the DB). */
+  async function ordersFindMine(ids) {
+    const wanted = (ids || []).filter(Boolean);
+    if (!wanted.length) return [];
+    if (LIVE && !liveFailed) {
+      const client = await loadSupabase();
+      if (client) {
+        const { data, error } = await client
+          .from(tables.orders)
+          .select("*")
+          .in("id", wanted)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        return data || [];
+      }
+    }
+    const all = read(LS.orders, []);
+    return all.filter(o => wanted.includes(o.id));
+  }
+
   async function orderInsert(order) {
     const token = order.token || (await nextToken());
     const now = new Date().toISOString();
@@ -286,7 +308,7 @@
     tables,
     loadSupabase,
     menu: { list: menuList, save: menuSave, toggleStock: menuToggleStock, updateItem: menuUpdateItem, addItem: menuAddItem },
-    orders: { list: ordersList, insert: orderInsert, update: orderUpdate, nextToken, subscribe: ordersSubscribe },
+    orders: { list: ordersList, findMine: ordersFindMine, insert: orderInsert, update: orderUpdate, nextToken, subscribe: ordersSubscribe },
     settings: { get: settingsGet, save: settingsSave }
   };
 })();

@@ -1,7 +1,7 @@
 /* Service worker — static shell cached so the menu wall loads even on a
    patchy kitchen connection; network-first for the pages themselves. */
 
-const CACHE = "athiya-v3";
+const CACHE = "athiya-v4";
 const CORE = [
   "./",
   "./index.html",

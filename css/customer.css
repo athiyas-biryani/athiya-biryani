@@ -257,6 +257,67 @@
 .confirm p { margin-bottom: 4px; }
 .confirm .btn { margin-top: 14px; }
 
+/* ── Order tracking (track row + live tracker + history) ────────────────── */
+.track-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 2px;
+}
+.track-row .btn { box-shadow: var(--shadow-chit), 0 2px 0 var(--ink); }
+.track-row .btn:active { box-shadow: var(--shadow-chit); }
+
+.confirm .chit { text-align: left; }
+.confirm .tracker-head { text-align: center; margin-bottom: 6px; }
+.confirm .tracker-head .stamp { font-size: 14px; padding: 2px 14px 3px; }
+
+.tracker-note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: rgba(74, 124, 71, 0.08);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  padding: 8px 12px;
+  text-align: center;
+}
+.tracker-note:empty { display: none; }
+
+.cancel-panel {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid var(--brick);
+  display: grid;
+  gap: 8px;
+}
+.cancel-timer {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.cancel-sec {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--brick);
+  min-width: 34px;
+  text-align: right;
+}
+.cancel-panel .btn { width: 100%; border-color: var(--brick); color: var(--brick); }
+.cancel-panel.is-expired { display: none; }
+
+/* Order history sheet */
+.orders-list {
+  padding: 10px 14px 22px;
+  display: grid;
+  gap: 12px;
+}
+.orders-list .order-chit { margin: 0; }
+
 /* ── About / contact ──────────────────────────────────────────────────────── */
 .about {
   padding: var(--space-6) 0 var(--space-7);

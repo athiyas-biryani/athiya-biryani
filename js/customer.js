@@ -11,11 +11,51 @@
   let settings = { pincodes: CFG.delivery.pincodes, open: true };
   let scrollSpy = null;
 
+  /* Orders placed from this device (no customer accounts — the browser keeps
+     the ids it created and re-hydrates each order's live status from the DB). */
+  let myOrders = [];
+  let trackTimer = null;
+  const GRACE_SECONDS = 60;
+
   function loadCart() {
     try { return JSON.parse(localStorage.getItem("athiya_cart")) || {}; } catch { return {}; }
   }
   function saveCart() {
     localStorage.setItem("athiya_cart", JSON.stringify(cart));
+  }
+
+  /* ── My-order history (local-only ids, live status from the DB) ────────── */
+  function myOrderIds() {
+    try { return JSON.parse(localStorage.getItem("athiya_my_orders")) || []; } catch { return []; }
+  }
+  function saveMyOrderIds(ids) {
+    localStorage.setItem("athiya_my_orders", JSON.stringify(ids));
+  }
+  function rememberOrder(order) {
+    const ids = myOrderIds();
+    if (ids.includes(order.id)) return;
+    ids.unshift(order.id);
+    saveMyOrderIds(ids.slice(0, 20));
+  }
+  function orderStatus(o) {
+    return {
+      pending:    { label: "Awaiting response", stamp: "stamp--pending",    note: "The counter is looking at your order." },
+      accepted:   { label: "Accepted · cooking", stamp: "stamp--cooking",   note: "The kitchen is on it." },
+      dispatched: { label: "Dispatched",         stamp: "stamp--dispatched", note: "Out for delivery." },
+      paid:       { label: "Completed",          stamp: "stamp--paid",       note: "Paid on delivery. Thank you!" },
+      rejected:   { label: "Rejected",           stamp: "stamp--rejected",   note: "The hotel could not take this order." },
+      cancelled:  { label: "Cancelled",          stamp: "stamp--cancelled",  note: "You cancelled this order." }
+    }[o.status] || { label: o.status, stamp: "stamp--pending", note: "" };
+  }
+  function graceLeft(o) {
+    const created = new Date(o.created_at).getTime();
+    if (Number.isNaN(created)) return 0;
+    return Math.max(0, GRACE_SECONDS - Math.floor((Date.now() - created) / 1000));
+  }
+  function time(iso) {
+    try {
+      return new Date(iso).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
+    } catch { return ""; }
   }
 
   /* ── Boot ───────────────────────────────────────────────────────────────── */
@@ -55,6 +95,32 @@
 
     buildPhotoGrid();
     wireEvents();
+
+    /* Live order tracking: hydrate history and reflect admin/accepted/rejected
+       changes the moment they happen. */
+    hydrateOrders();
+    DB.orders.subscribe(onOrderChange);
+  }
+
+  /* A tracked order changed (status updated by the admin or by this device's
+     cancel). Re-render just the affected tracker so the customer sees it live. */
+  function onOrderChange(order, list) {
+    const ids = myOrderIds();
+    if (Array.isArray(list)) {
+      myOrders = list.filter(o => ids.includes(o.id));
+    } else if (order && ids.includes(order.id)) {
+      const idx = myOrders.findIndex(o => o.id === order.id);
+      if (idx === -1) myOrders.unshift(order);
+      else myOrders[idx] = order;
+    }
+    renderTrackRow();
+    renderOrdersList();
+    const t = $("#confirm-tracker");
+    if (t && !$("#confirm").hidden) {
+      const cur = myOrders[0];
+      t.innerHTML = cur ? trackerBody(cur) : "";
+      wireTrackerActions();
+    }
   }
 
   function renderStatus() {
@@ -259,6 +325,7 @@
     $("#scrim").classList.remove("is-show");
     $("#cart-sheet").classList.remove("is-open");
     $("#checkout-sheet").classList.remove("is-open");
+    $("#orders-sheet").classList.remove("is-open");
     document.body.style.overflow = "";
     setTimeout(() => { $("#scrim").hidden = true; }, 220);
   }
@@ -316,7 +383,7 @@
           status: "pending"
         });
         Chime.stamp();
-        showConfirm(order.token);
+        showConfirm(order);
         cart = {};
         saveCart();
         updateCartBar();
@@ -332,9 +399,130 @@
     });
   }
 
-  function showConfirm(token) {
-    $("#confirm-token").textContent = "#" + token;
+  function showConfirm(order) {
+    rememberOrder(order);
+    refreshMyOrders(true);
+    $("#confirm-tracker").innerHTML = trackerBody(order);
+    wireTrackerActions();
+    startTrackTimer();
     $("#confirm").hidden = false;
+  }
+
+  /* ── Order history / live tracking ─────────────────────────────────────── */
+  async function hydrateOrders() {
+    const ids = myOrderIds();
+    if (!ids.length) { myOrders = []; return; }
+    try {
+      myOrders = await DB.orders.findMine(ids);
+    } catch (e) {
+      console.error("hydrateOrders", e);
+      myOrders = myOrders.filter(o => ids.includes(o.id));
+    }
+    renderTrackRow();
+    renderOrdersList();
+  }
+
+  async function refreshMyOrders(scroll = false) {
+    const ids = myOrderIds();
+    if (ids.length) {
+      try { myOrders = await DB.orders.findMine(ids); }
+      catch (e) { console.error("refreshMyOrders", e); }
+    }
+    renderTrackRow();
+    renderOrdersList();
+    if (scroll) {
+      const t = $("#confirm-tracker");
+      if (t && !$("#confirm").hidden) t.innerHTML = myOrders.length ? trackerBody(myOrders[0]) : "";
+    }
+  }
+
+  function trackerBody(order) {
+    const s = orderStatus(order);
+    const lines = (order.items || []).map(it =>
+      `<li><span>${escapeHtml(it.name)} × ${it.qty}</span><em>${fmt(it.price * it.qty)}</em></li>`).join("");
+    const secs = graceLeft(order);
+    let cancel = "";
+    if (order.status === "pending" && secs > 0) {
+      cancel = `
+        <div class="cancel-panel">
+          <div class="cancel-timer">
+            <span class="cancel-sec" data-sec="${order.id}">${secs}</span>
+            <span class="cancel-timer-label">seconds to change your mind</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" type="button" data-cancel="${order.id}">Cancel order</button>
+        </div>`;
+    }
+    const note = s.note
+      ? `<p class="tracker-note">${escapeHtml(s.note)}</p>` : "";
+    return `
+      <div class="tracker-head">
+        <span class="stamp ${s.stamp}">${s.label}</span>
+      </div>
+      <div class="chit-head">
+        <span class="token">#${escapeHtml(order.token)}</span>
+        <span class="chit-time">${time(order.created_at)}</span>
+      </div>
+      <ul class="chit-rows" style="list-style:none;padding:0;margin:0;">${lines || "<li><span>—</span></li>"}</ul>
+      <div class="net"><span>Net</span><span>${fmt(order.net_amount)}</span></div>
+      ${cancel}
+      ${note}`;
+  }
+
+  function renderTrackRow() {
+    const row = $("#track-row");
+    row.hidden = myOrders.length === 0;
+    $("#track-count").textContent = myOrders.length ? "(" + myOrders.length + ")" : "";
+  }
+
+  function renderOrdersList() {
+    const list = $("#orders-list");
+    list.innerHTML = myOrders.length
+      ? myOrders.map(o => `
+          <article class="chit order-chit" data-oid="${o.id}">
+            ${trackerBody(o)}
+          </article>`).join("")
+      : `<p class="small muted text-center" style="padding:28px 8px;">No orders yet from this phone.<br>Place an order to track it here.</p>`;
+    list.querySelectorAll("[data-cancel]").forEach(b => b.addEventListener("click", onCancelOrder));
+  }
+
+  /* Re-render countdown seconds every second while a tracker is live. */
+  function startTrackTimer() {
+    if (trackTimer) return;
+    trackTimer = setInterval(() => {
+      document.querySelectorAll("[data-sec]").forEach(el => {
+        const order = myOrders.find(o => o.id === el.dataset.sec);
+        const secs = order ? graceLeft(order) : 0;
+        el.textContent = secs;
+        const cancelBtn = el.closest(".cancel-panel")?.querySelector("[data-cancel]");
+        if (cancelBtn) cancelBtn.disabled = secs <= 0;
+        if (secs <= 0) {
+          el.closest(".cancel-panel")?.classList.add("is-expired");
+        }
+      });
+    }, 1000);
+  }
+
+  function stopTrackTimer() {
+    if (trackTimer) { clearInterval(trackTimer); trackTimer = null; }
+  }
+
+  function wireTrackerActions() {
+    document.querySelectorAll("[data-cancel]").forEach(b => b.addEventListener("click", onCancelOrder));
+  }
+
+  async function onCancelOrder(e) {
+    const id = e.currentTarget.dataset.cancel;
+    const order = myOrders.find(o => o.id === id);
+    if (!order || order.status !== "pending" || graceLeft(order) <= 0) return;
+    try {
+      await DB.orders.update(id, { status: "cancelled" });
+      toast("Order cancelled — the counter has been told.");
+      Chime.error();
+      refreshMyOrders();
+    } catch (err) {
+      console.error(err);
+      toast("Couldn't cancel — please try again.", true);
+    }
   }
 
   /* ── About photos: auto-sliding strip with manual arrows ────────────────── */
@@ -385,15 +573,18 @@
     $("#close-checkout").addEventListener("click", closeSheets);
     $("#scrim").addEventListener("click", closeSheets);
 
+    $("#open-orders").addEventListener("click", () => { refreshMyOrders(); openSheet($("#orders-sheet")); });
+    $("#close-orders").addEventListener("click", closeSheets);
+
     $("#checkout-btn").addEventListener("click", () => {
       $("#checkout-net").textContent = fmt(cartTotal());
       closeSheets();
       setTimeout(() => openSheet($("#checkout-sheet")), 240);
     });
 
-    $("#confirm-done").addEventListener("click", () => { $("#confirm").hidden = true; });
+    $("#confirm-done").addEventListener("click", () => { $("#confirm").hidden = true; stopTrackTimer(); });
 
-    document.addEventListener("keydown", e => { if (e.key === "Escape") { closeSheets(); $("#confirm").hidden = true; } });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") { closeSheets(); $("#confirm").hidden = true; stopTrackTimer(); } });
 
     wireCheckout();
   }
