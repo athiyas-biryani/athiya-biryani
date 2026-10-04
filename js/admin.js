@@ -409,9 +409,8 @@
       `Address: ${order.address} (${order.pincode})`,
       `Collect cash or UPI QR at the door.`
     ].join("\n");
-    /* No phone number on the deep link — WhatsApp opens its own recipient
-       picker so staff can share the bill with whoever is taking the delivery. */
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    // Use WhatsApp share without hardcoded number to open contact picker
+    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank");
   }
 
